@@ -3,6 +3,8 @@ import feedparser
 import operator
 from trees import *
 from treePlotter import *
+import os
+from os import listdir
 
 
 def createVocabList(dataSet):
@@ -28,24 +30,41 @@ def textParse(bigString):
     return [tok.lower() for tok in listOfTokens if len(tok) > 2]
 
 
-def spamTest():
+def load_data1():
     docList = []
     classList = []
-    fullText = []
     for i in range(1, 26):
         wordList = textParse(open('email/spam/%d.txt' % i).read())
         docList.append(wordList)
-        fullText.extend(wordList)
         classList.append('spam')
         wordList = textParse(open('email/ham/%d.txt' % i).read())
         docList.append(wordList)
-        fullText.extend(wordList)
         classList.append('ham')
+    return docList,classList
+
+def load_data2():
+    docList = []
+    classList = []
+    files1 = os.listdir('review_polarity/txt_sentoken/neg/')
+    files2 = os.listdir('review_polarity/txt_sentoken/pos/')
+    num = len(files1)
+    for i in range(num):
+        wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
+        docList.append(wordList)
+        classList.append('neg')
+        wordList = textParse(open('review_polarity/txt_sentoken/pos/' + files2[i]).read())
+        docList.append(wordList)
+        classList.append('pos')
+    return docList,classList
+
+def spamTest():
+    docList, classList = load_data2()
+    num = len(docList)
     vocabList = createVocabList(docList)
-    trainingSet = range(50)
+    trainingSet = range(num)
     trainMat = []
-    test_num = 20
-    for docIndex in trainingSet[:(50-test_num)]:
+    rate = 0.4
+    for docIndex in trainingSet[:int((1 - rate) * num)]:
         temp = setOfWords2Vec(vocabList, docList[docIndex])
         temp.append(classList[docIndex])
         trainMat.append(temp)
@@ -56,15 +75,15 @@ def spamTest():
     grabTree('classifierStorage.txt')
 
     testMat = []
-    for docIndex in trainingSet[(50-test_num):]:
+    for docIndex in trainingSet[int((1-rate) * num):]:
         temp = setOfWords2Vec(vocabList, docList[docIndex])
         temp.append(classList[docIndex])
         testMat.append(temp)
     error_count = 0
-    for i in range(test_num):
-        if classify(myTree, vocabList, testMat[i]) != classList[i + 50 - test_num]:
+    for i in range(int(rate * num)):
+        if classify(myTree, vocabList, testMat[i]) != classList[i + int((1 - rate) * num)]:
             error_count += 1
-    print "error rate: %f" % (float(error_count) / test_num)
+    print "error rate: %f" % (float(error_count) / (rate * num))
     createPlot(myTree)
 
 
