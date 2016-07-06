@@ -84,6 +84,14 @@ def spamTest():
     while finished_thread[0] < 4:
         time.sleep(10)
         pass
+    count = 0
+    fr = open('stopwords.txt')
+    stopwords = [inst.strip() for inst in fr.readlines()]
+    for eachword in stopwords:
+        if eachword in vocabList:
+            vocabList.remove(eachword)
+            count += 1# delete stopwords
+    print 'deleted %d words' % count
     print 'number of vocab is: %d' % len(vocabList)
     print '== Building TrainMat =='
     trainingSet = range(num)
