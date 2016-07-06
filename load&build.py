@@ -40,6 +40,7 @@ def load_data1():
         wordList = textParse(open('email/ham/%d.txt' % i).read())
         docList.append(wordList)
         classList.append('ham')
+    print 'number of papers is: %d' % len(docList)
     return docList,classList
 
 def load_data2():
