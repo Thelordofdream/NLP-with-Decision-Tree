@@ -123,7 +123,7 @@ def spamTest():
     myTree = createTree(trainMat, labels0)
     print myTree
     storeTree(myTree, 'classifierStorage.txt')
-    grabTree('classifierStorage.txt')
+    # grabTree('classifierStorage.txt')
     print '=== Building TestMat =='
     testMat = []
     for docIndex in trainingSet[int((1-rate) * num):]:
