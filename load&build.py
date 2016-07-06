@@ -52,7 +52,7 @@ def load_data2():
     fullText = []
     files1 = os.listdir('review_polarity/txt_sentoken/neg/')
     files2 = os.listdir('review_polarity/txt_sentoken/pos/')
-    num = len(files1)/10
+    num = len(files1)
     for i in range(num):
         wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
         docList.append(wordList)
@@ -149,7 +149,7 @@ def Words2Vec(vocabList, docList, classList, trainingSet, trainMat, finished_thr
 def DelLeastFreq(vocabList0, fullText, vocabList, finished_thread):
     count = 0
     for token in vocabList0:
-        if fullText.count(token) < 50:
+        if fullText.count(token) < 500:
             vocabList.remove(token)
             count += 1
     finished_thread[0] +=1
