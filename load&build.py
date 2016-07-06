@@ -1,3 +1,6 @@
+import thread
+
+import time
 from numpy import *
 import feedparser
 import operator
@@ -49,15 +52,15 @@ def load_data2():
     fullText = []
     files1 = os.listdir('review_polarity/txt_sentoken/neg/')
     files2 = os.listdir('review_polarity/txt_sentoken/pos/')
-    num = len(files1)
+    num = len(files1)/10
     for i in range(num):
         wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
         docList.append(wordList)
-        fullText.append(wordList)
+        fullText.extend(wordList)
         classList.append('neg')
         wordList = textParse(open('review_polarity/txt_sentoken/pos/' + files2[i]).read())
         docList.append(wordList)
-        fullText.append(wordList)
+        fullText.extend(wordList)
         classList.append('pos')
     print 'number of papers is: %d' % len(docList)
     return docList,classList,fullText
@@ -68,19 +71,45 @@ def spamTest():
     num = len(docList)
     print '== Building VocabList =='
     vocabList = createVocabList(docList)
-    DelLeastFreq(vocabList, fullText)
+    vocabList0 = vocabList[:]
+    needs = len(vocabList)
+    finished_thread = [0]
+    try:
+        thread.start_new_thread(DelLeastFreq, (vocabList0[:int(needs/4)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs/4):int(needs/2)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs/2):int(needs*3.0/4)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs*3.0/4):needs], fullText, vocabList, finished_thread))
+    except:
+        print "Error: unable to start thread"
+    while finished_thread[0] < 4:
+        time.sleep(10)
+        pass
     print 'number of vocab is: %d' % len(vocabList)
+    print '== Building TrainMat =='
     trainingSet = range(num)
     trainMat = []
-    rate = 0.4
-    print '== Building TrainMat =='
-    count = 0
-    for docIndex in trainingSet[:int((1 - rate) * num)]:
-        temp = setOfWords2Vec(vocabList, docList[docIndex])
-        temp.append(classList[docIndex])
-        trainMat.append(temp)
-        count += 1
-        print 'Builded %d essay' % count
+    trainMat1 = []
+    trainMat2 = []
+    trainMat3 = []
+    trainMat4 = []
+    rate = 0.2
+    needs = int((1 - rate) * num)
+    finished_thread = [0]
+    try:
+        thread.start_new_thread(Words2Vec, (vocabList, docList, classList, trainingSet[:int(needs/4)], trainMat1, finished_thread))
+        thread.start_new_thread(Words2Vec, (vocabList, docList, classList, trainingSet[int(needs/4):int(needs/2)], trainMat2, finished_thread))
+        thread.start_new_thread(Words2Vec, (vocabList, docList, classList, trainingSet[int(needs/2):int(needs*3.0/4)], trainMat3, finished_thread))
+        thread.start_new_thread(Words2Vec, (vocabList, docList, classList, trainingSet[int(needs*3.0/4):needs], trainMat4, finished_thread))
+    except:
+        print "Error: unable to start thread"
+    while finished_thread[0] < 4:
+        time.sleep(10)
+        pass
+    trainMat.extend(trainMat1)
+    trainMat.extend(trainMat2)
+    trainMat.extend(trainMat3)
+    trainMat.extend(trainMat4)
+    print 'number of train is: %d' % len(trainMat)
     print '==== Building Tree ===='
     labels0 = vocabList[:]
     myTree = createTree(trainMat, labels0)
@@ -99,15 +128,23 @@ def spamTest():
         if classify(myTree, vocabList, testMat[i]) != classList[i + int((1 - rate) * num)]:
             error_count += 1
     print "error rate: %f" % (float(error_count) / (rate * num))
+    createPlot(myTree)
+
+def Words2Vec(vocabList, docList, classList, trainingSet, trainMat, finished_thread):
+    for docIndex in trainingSet:
+        temp = setOfWords2Vec(vocabList, docList[docIndex])
+        temp.append(classList[docIndex])
+        trainMat.append(temp)
+    finished_thread[0] += 1
 
 
-
-def DelLeastFreq(vocabList, fullText):
+def DelLeastFreq(vocabList0, fullText, vocabList, finished_thread):
     count = 0
-    for token in vocabList:
-        if fullText.count(token) < 1000:
+    for token in vocabList0:
+        if fullText.count(token) < 50:
             vocabList.remove(token)
             count += 1
+    finished_thread[0] +=1
     print 'deleted %d words' % count
 
 
