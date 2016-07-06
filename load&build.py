@@ -46,56 +46,69 @@ def load_data1():
 def load_data2():
     docList = []
     classList = []
+    fullText = []
     files1 = os.listdir('review_polarity/txt_sentoken/neg/')
     files2 = os.listdir('review_polarity/txt_sentoken/pos/')
     num = len(files1)
     for i in range(num):
         wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
         docList.append(wordList)
+        fullText.append(wordList)
         classList.append('neg')
         wordList = textParse(open('review_polarity/txt_sentoken/pos/' + files2[i]).read())
         docList.append(wordList)
+        fullText.append(wordList)
         classList.append('pos')
     print 'number of papers is: %d' % len(docList)
-    return docList,classList
+    return docList,classList,fullText
 
 def spamTest():
-    docList, classList = load_data2()
+    print '===== Loading Data ====='
+    docList, classList, fullText = load_data2()
     num = len(docList)
+    print '== Building VocabList =='
     vocabList = createVocabList(docList)
+    DelLeastFreq(vocabList, fullText)
+    print 'number of vocab is: %d' % len(vocabList)
     trainingSet = range(num)
     trainMat = []
     rate = 0.4
+    print '== Building TrainMat =='
+    count = 0
     for docIndex in trainingSet[:int((1 - rate) * num)]:
         temp = setOfWords2Vec(vocabList, docList[docIndex])
         temp.append(classList[docIndex])
         trainMat.append(temp)
+        count += 1
+        print 'Builded %d essay' % count
+    print '==== Building Tree ===='
     labels0 = vocabList[:]
-    print 'number of vocab is: %d' % len(vocabList)
     myTree = createTree(trainMat, labels0)
     print myTree
     storeTree(myTree, 'classifierStorage.txt')
     grabTree('classifierStorage.txt')
-
+    print '=== Building TestMat =='
     testMat = []
     for docIndex in trainingSet[int((1-rate) * num):]:
         temp = setOfWords2Vec(vocabList, docList[docIndex])
         temp.append(classList[docIndex])
         testMat.append(temp)
+    print '======= Testing ======='
     error_count = 0
     for i in range(int(rate * num)):
         if classify(myTree, vocabList, testMat[i]) != classList[i + int((1 - rate) * num)]:
             error_count += 1
     print "error rate: %f" % (float(error_count) / (rate * num))
-    createPlot(myTree)
 
 
-def calcMostFreq(vocabList, fullText):
-    freqDict = {}
+
+def DelLeastFreq(vocabList, fullText):
+    count = 0
     for token in vocabList:
-        freqDict[token] = fullText.count(token)
-    sortedFreq = sorted(freqDict.iteritems(), key=operator.itemgetter(1), reverse=True)
-    return sortedFreq[:30]
+        if fullText.count(token) < 1000:
+            vocabList.remove(token)
+            count += 1
+    print 'deleted %d words' % count
 
 
 spamTest()
