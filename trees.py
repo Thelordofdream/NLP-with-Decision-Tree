@@ -55,7 +55,7 @@ def chooseBestFeatureToSplit(dataSet):
         if infoGain > bestInfoGain:
             bestInfoGain = infoGain
             bestFeature = i
-        # print infoGain
+            # print infoGain
     return bestFeature
 
 
@@ -110,18 +110,3 @@ def grabTree(filename):
     import pickle
     fr = open(filename)
     return pickle.load(fr)
-
-
-myDat, labels = createDataSet()
-# print calcShannonEnt(myDat)
-# myDat[0][-1] = 'maybe'
-# print calcShannonEnt(myDat)
-# print splitDataSet(myDat, 0, 1)
-# print splitDataSet(myDat, 0, 0)
-# print 'The best feature is ' + labels[chooseBestFeatureToSplit(myDat)]
-labels0 = labels[:]
-myTree = createTree(myDat, labels0)
-# classify(myTree, labels, [1, 0])
-# classify(myTree, labels, [1, 1])
-storeTree(myTree, 'classifierStorage.txt')
-grabTree('classifierStorage.txt')

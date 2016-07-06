@@ -54,12 +54,6 @@ def getTreeDepth(myTree):
     return maxDepth
 
 
-def retrieveTree(i):
-    listOfTrees = [{'no surfacing': {0: 'no', 1: {'flippers': {0: 'no', 1: 'yes'}}}},
-                   {'no surfacing': {0: 'no', 1: {'flippers': {0: {'head': {0: 'no', 1: 'yes'}}, 1: 'yes'}}}}]
-    return listOfTrees[i]
-
-
 def plotMidText(cntrPt, parentPt, txtString):
     xMid = (parentPt[0] - cntrPt[0]) / 2.0 + cntrPt[0]
     yMid = (parentPt[1] - cntrPt[1]) / 2.0 + cntrPt[1]
@@ -83,19 +77,3 @@ def plotTree(myTree, parentPt, nodeText):
             plotNode(secondDict[key], (plotTree.xOff, plotTree.yOff), cntrPt, leafNode)
             plotMidText((plotTree.xOff, plotTree.yOff), cntrPt, str(key))
     plotTree.yOff += 1.0 / plotTree.totalD
-
-
-def lenses():
-    fr = open('lenses.txt')
-    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
-    lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
-    lensesTree = trees.createTree(lenses, lensesLabels)
-    createPlot(lensesTree)
-    return
-
-
-myTree = retrieveTree(0)
-print getNumLeafs(myTree)
-print getTreeDepth(myTree)
-createPlot(myTree)
-#lenses()
