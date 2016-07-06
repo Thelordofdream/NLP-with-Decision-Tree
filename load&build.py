@@ -55,6 +55,7 @@ def load_data2():
         wordList = textParse(open('review_polarity/txt_sentoken/pos/' + files2[i]).read())
         docList.append(wordList)
         classList.append('pos')
+    print 'number of papers is: %d' % len(docList)
     return docList,classList
 
 def spamTest():
@@ -69,6 +70,7 @@ def spamTest():
         temp.append(classList[docIndex])
         trainMat.append(temp)
     labels0 = vocabList[:]
+    print 'number of vocab is: %d' % len(vocabList)
     myTree = createTree(trainMat, labels0)
     print myTree
     storeTree(myTree, 'classifierStorage.txt')
