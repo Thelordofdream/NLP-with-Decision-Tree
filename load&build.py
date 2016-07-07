@@ -123,7 +123,6 @@ def spamTest():
     myTree = createTree(trainMat, labels0)
     print myTree
     storeTree(myTree, 'classifierStorage.txt')
-    # grabTree('classifierStorage.txt')
     print '=== Building TestMat =='
     testMat = []
     for docIndex in trainingSet[int((1-rate) * num):]:
@@ -136,6 +135,7 @@ def spamTest():
         if classify(myTree, vocabList, testMat[i]) != classList[i + int((1 - rate) * num)]:
             error_count += 1
     print "error rate: %f" % (float(error_count) / (rate * num))
+    # myTree = grabTree('classifierStorage.txt')
     createPlot(myTree)
 
 def Words2Vec(vocabList, docList, classList, trainingSet, trainMat, finished_thread):
@@ -149,7 +149,7 @@ def Words2Vec(vocabList, docList, classList, trainingSet, trainMat, finished_thr
 def DelLeastFreq(vocabList0, fullText, vocabList, finished_thread):
     count = 0
     for token in vocabList0:
-        if fullText.count(token) < 500:
+        if fullText.count(token) < 100:
             vocabList.remove(token)
             count += 1
     finished_thread[0] +=1
