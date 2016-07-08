@@ -1,5 +1,5 @@
-import multiprocessing
 import thread
+
 import time
 from numpy import *
 import feedparser
@@ -52,7 +52,7 @@ def load_data2():
     fullText = []
     files1 = os.listdir('review_polarity/txt_sentoken/neg/')
     files2 = os.listdir('review_polarity/txt_sentoken/pos/')
-    num = len(files1)
+    num = len(files1) / 10
     for i in range(num):
         wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
         docList.append(wordList)
@@ -73,15 +73,17 @@ def spamTest():
     vocabList = createVocabList(docList)
     vocabList0 = vocabList[:]
     needs = len(vocabList)
-    p1 = multiprocessing.Process(target=DelLeastFreq, args=(vocabList0[:int(needs/4)], fullText, vocabList))
-    p2 = multiprocessing.Process(target=DelLeastFreq, args=(vocabList0[int(needs/4):int(needs/2)], fullText, vocabList))
-    p3 = multiprocessing.Process(target=DelLeastFreq, args=(vocabList0[int(needs/2):int(needs*3.0/4)], fullText, vocabList))
-    p4 = multiprocessing.Process(target=DelLeastFreq, args=(vocabList0[int(needs*3.0/4):needs], fullText, vocabList))
-    p1.start()
-    p2.start()
-    p3.start()
-    p4.start()
-    print("The number of CPU is:" + str(multiprocessing.cpu_count()))
+    finished_thread = [0]
+    try:
+        thread.start_new_thread(DelLeastFreq, (vocabList0[:int(needs/4)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs/4):int(needs/2)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs/2):int(needs*3.0/4)], fullText, vocabList, finished_thread))
+        thread.start_new_thread(DelLeastFreq, (vocabList0[int(needs*3.0/4):needs], fullText, vocabList, finished_thread))
+    except:
+        print "Error: unable to start thread"
+    while finished_thread[0] < 4:
+        time.sleep(10)
+        pass
     count = 0
     fr = open('stopwords.txt')
     stopwords = [inst.strip() for inst in fr.readlines()]
@@ -141,7 +143,7 @@ def Words2Vec(vocabList, docList, classList, trainingSet, trainMat, finished_thr
         temp = setOfWords2Vec(vocabList, docList[docIndex])
         temp.append(classList[docIndex])
         trainMat.append(temp)
-    # finished_thread[0] += 1
+    finished_thread[0] += 1
 
 
 def DelLeastFreq(vocabList0, fullText, vocabList, finished_thread):
