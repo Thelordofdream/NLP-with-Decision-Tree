@@ -52,7 +52,7 @@ def load_data2():
     fullText = []
     files1 = os.listdir('review_polarity/txt_sentoken/neg/')
     files2 = os.listdir('review_polarity/txt_sentoken/pos/')
-    num = len(files1) / 10
+    num = len(files1)
     for i in range(num):
         wordList = textParse(open('review_polarity/txt_sentoken/neg/' + files1[i]).read())
         docList.append(wordList)
